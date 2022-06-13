@@ -77,7 +77,7 @@ const App = (props: AppPropsType) => {
       {showAddRemoveHost &&
         <>
           <Button variant="contained" onClick={removeHost} disabled={!selectedHost}>Remove host</Button>
-          <TextField fullWidth value={newHost} onChange={(e) => setNewHost(e.target.value)} style={styles.addHost} />
+          <TextField fullWidth value={newHost} onChange={(e) => setNewHost(e.target.value)} style={styles.addHost} label="https://dev.yoursite.com" />
           <Button variant="contained" onClick={addNewHost}>Add host</Button>
         </>
       }
