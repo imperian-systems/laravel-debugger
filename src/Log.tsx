@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { getAndThen } from "./fetchAndThen";
+import { HostType } from "./App";
 
 interface LogPropsType {
-  host: string;
+  host: HostType;
+  setIsError: Function;
 };
 
 const Log = (props: LogPropsType) => {
   const [log, setLog] = useState<string[] | object[]>();
 
   useEffect(() => {
-    fetch(props.host + "/api/log")
-    .then((response) => response.json())
-    .then((data) => setLog(data));
-  }, [props.host, setLog]);
+    getAndThen(props.host.host + "/api/log", props.host.key, setLog, props.setIsError);
+  }, [props.host, setLog, props.setIsError]);
 
   return <Table>
     <TableHead>
       <TableRow>
-        <TableCell>Log on {props.host}</TableCell>
+        <TableCell>Log on {props.host.host}</TableCell>
       </TableRow>
     </TableHead>
     <TableBody>

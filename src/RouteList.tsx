@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { getAndThen } from "./fetchAndThen";
+import { HostType } from "./App";
 
 interface RouteType {
   uri: string;
@@ -20,22 +22,21 @@ const TableEntry = (props: TableEntryPropsType) => {
 };
 
 interface RouteListPropsType {
-  host: string;
+  host: HostType;
+  setIsError: Function;
 };
 
 const RouteList = (props: RouteListPropsType) => {
   const [routes, setRouteList] = useState<RouteType[]>();
 
   useEffect(() => {
-    fetch(props.host + "/api/route")
-    .then((response) => response.json())
-    .then((data) => setRouteList(data));
-  }, [props.host]);
+    getAndThen(props.host.host + "/api/route", props.host.key, setRouteList, props.setIsError);
+  }, [props.host, setRouteList, props.setIsError]);
 
   return <Table>
     <TableHead>
       <TableRow>
-        <TableCell colSpan={3}>RouteList on {props.host}</TableCell>
+        <TableCell colSpan={3}>RouteList on {props.host.host}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell>URI</TableCell>

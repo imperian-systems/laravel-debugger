@@ -7,8 +7,17 @@ import LaravelTable from "./LaravelTable";
 import RouteList from "./RouteList";
 import Log from "./Log";
 
+export interface HostType {
+  host: string;
+  key: string;
+};
+
+interface HostsType {
+  [key:string]: HostType;
+};
+
 interface AppPropsType {
-}
+};
 
 const styles = {
   addHost: {
@@ -20,11 +29,13 @@ const styles = {
 };
 
 const App = (props: AppPropsType) => {
-  const [hosts, setHosts] = useState<string[]>([]);
+  const [hosts, setHosts] = useState<HostsType>({});
   const [selectedHost, setSelectedHost] = useState<string>("");
   const [newHost, setNewHost] = useState<string>("");
+  const [newKey, setNewKey] = useState<string>("");
   const [isSaved, setIsSaved] = useState<boolean>(true);
   const [showAddRemoveHost, setShowAddRemoveHost] = useState<boolean>(false);
+  const [isError, setIsError] = useState<string>("");
   const navigate = useNavigate();
 
   const saveSettings = () => {
@@ -43,14 +54,27 @@ const App = (props: AppPropsType) => {
 
   const addNewHost = () => {
     if(!newHost) return;
-    setHosts([...hosts, newHost])
+    if(!newKey) return;
+
+    const host: HostType = {
+      host: newHost,
+      key: newKey
+    };
+    setHosts({...hosts, [host.host]: host})
     setSelectedHost(newHost);
     setNewHost("");
+    setNewKey("");
     setIsSaved(false);
   };
 
   const removeHost = () => {
-    const newHosts = hosts.filter(host => host !== selectedHost);
+    const newHosts: HostsType = {};
+    Object.keys(hosts).forEach((uri) => {
+      if(hosts[uri].host !== selectedHost) {
+        newHosts[uri] = hosts[uri];
+      }
+    });
+//    const newHosts = hosts.filter(host => host.host !== selectedHost);
     setSelectedHost("");
     setHosts(newHosts);
     setIsSaved(false);
@@ -70,19 +94,20 @@ const App = (props: AppPropsType) => {
           onChange={(e) => setSelectedHost(e.target.value)}
           style={{width: "90%"}}
         >
-          {hosts?.map((host, k) => <MenuItem key={k} value={host}>{host}</MenuItem>)}
+          {Object.keys(hosts).map((uri, k) => <MenuItem key={k} value={hosts[uri].host}>{hosts[uri].host}</MenuItem>)}
         </Select>
         <SettingsIcon style={styles.button} onClick={() => setShowAddRemoveHost(!showAddRemoveHost)}/>
       </div>
       {showAddRemoveHost &&
         <>
           <Button variant="contained" onClick={removeHost} disabled={!selectedHost}>Remove host</Button>
-          <TextField fullWidth value={newHost} onChange={(e) => setNewHost(e.target.value)} style={styles.addHost} label="https://dev.yoursite.com" />
+          <TextField fullWidth value={newHost} onChange={(e) => setNewHost(e.target.value)} style={styles.addHost} label="URI" />
+          <TextField fullWidth value={newKey} onChange={(e) => setNewKey(e.target.value)} style={styles.addHost} label="Shared key" />
           <Button variant="contained" onClick={addNewHost}>Add host</Button>
         </>
       }
     </FormControl>
-    {selectedHost &&
+    {selectedHost && !isError &&
       <>
         <div>
           <Button onClick={() => navigate("/tables")}>Tables</Button>
@@ -92,22 +117,25 @@ const App = (props: AppPropsType) => {
         <Routes>
           <Route
             path="/tables"
-            element={<Tables host={selectedHost} />}
+            element={<Tables host={hosts[selectedHost]} setIsError={setIsError} />}
           />
           <Route
             path="/table/:table"
-            element={<LaravelTable host={selectedHost} />}
+            element={<LaravelTable host={hosts[selectedHost]} setIsError={setIsError} />}
           />
           <Route
             path="/routes"
-            element={<RouteList host={selectedHost} />}
+            element={<RouteList host={hosts[selectedHost]} setIsError={setIsError} />}
           />
           <Route
             path="/log"
-            element={<Log host={selectedHost} />}
+            element={<Log host={hosts[selectedHost]} setIsError={setIsError} />}
           />
         </Routes>
       </>
+    }
+    {isError &&
+      <div>{isError}</div>
     }
   </Container>;
 };

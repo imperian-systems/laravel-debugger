@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { HostType } from "./App";
+import { getAndThen } from "./fetchAndThen";
 
 interface LaravelTablePropsType {
-  host: string;
+  host: HostType;
+  setIsError: Function;
 };
 
 interface TableMetaDataType {
@@ -22,19 +25,14 @@ const LaravelTable = (props: LaravelTablePropsType) => {
   const [tableData, setTableData] = useState<TableDataType[]>();
 
   useEffect(() => {
-    fetch(props.host + "/api/table/" + table)
-    .then((response) => response.json())
-    .then((data) => setTableMetaData(data));
-
-    fetch(props.host + "/api/table/" + table + "/row")
-    .then((response) => response.json())
-    .then((data) => setTableData(data));
-  }, [props.host, table, setTableMetaData, setTableData]);
+    getAndThen(props.host.host + "/api/table/" + table, props.host.key, setTableMetaData, props.setIsError);
+    getAndThen(props.host.host + "/api/table/" + table + "/row", props.host.key, setTableData, props.setIsError);
+  }, [props.host, table, setTableMetaData, setTableData, props.setIsError]);
 
   return <Table>
     <TableHead>
       <TableRow>
-        <TableCell colSpan={tableMetaData?.columns.length || 1}>Table {table} on {props.host}</TableCell>
+        <TableCell colSpan={tableMetaData?.columns.length || 1}>Table {table} on {props.host.host}</TableCell>
       </TableRow>
       <TableRow>
         {tableMetaData?.columns.map((column, k) => <TableCell key={k}>{column}</TableCell>)}
